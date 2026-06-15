@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>90km du Mont-Blanc — Stratégie de course</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f7f4; color: #2c2c2a; padding: 1rem; }
+.header { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 0.5px solid rgba(0,0,0,0.1); }
+.header h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+.header p { font-size: 13px; color: #5F5E5A; }
+.nav { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.nav-btn { padding: 7px 16px; border-radius: 20px; border: 0.5px solid rgba(0,0,0,0.15); background: #fff; font-size: 13px; cursor: pointer; color: #2c2c2a; font-family: inherit; transition: all 0.15s; }
+.nav-btn.active { background: #2c2c2a; color: #fff; border-color: #2c2c2a; }
+.section { display: none; }
+.section.active { display: block; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+.stat { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 0.75rem 1rem; }
+.stat .label { font-size: 11px; color: #5F5E5A; margin-bottom: 3px; }
+.stat .val { font-size: 18px; font-weight: 500; }
+.card { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.card h2 { font-size: 14px; font-weight: 500; margin-bottom: 12px; color: #2c2c2a; }
+.chart-wrap { position: relative; width: 100%; height: 540px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; font-size: 12px; color: #5F5E5A; }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+/* TABLE */
+.table-wrap { overflow-x: auto; max-height: 560px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
+th { font-size: 11px; font-weight: 500; color: #5F5E5A; text-align: left; padding: 6px 8px; border-bottom: 0.5px solid rgba(0,0,0,0.1); background: #f8f7f4; position: sticky; top: 0; z-index: 2; }
+td { padding: 6px 8px; border-bottom: 0.5px solid rgba(0,0,0,0.07); vertical-align: middle; color: #2c2c2a; }
+tr:hover td { background: #f8f7f4; }
+.section-row td { background: #f1efe8; font-weight: 500; font-size: 11px; color: #5F5E5A; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 8px; }
+.total-row td { font-weight: 500; background: #f1efe8; border-top: 0.5px solid rgba(0,0,0,0.15); }
+.ravito-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; background: #E1F5EE; color: #085041; font-size: 10px; font-weight: 500; margin-left: 4px; vertical-align: middle; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 500; }
+.ok    { background: #EAF3DE; color: #27500A; }
+.warn  { background: #FAEEDA; color: #633806; }
+.tight { background: #FCEBEB; color: #791F1F; }
+.gm    { color: #185FA5; font-weight: 500; }
+.gd    { color: #854F0B; font-weight: 500; }
+.num   { color: #5F5E5A; }
+.td-a  { border-left: 2px solid rgba(24,95,165,0.2); }
+.td-b  { border-left: 2px solid rgba(59,109,17,0.2); }
+.th-a  { border-left: 2px solid #185FA5; }
+.th-b  { border-left: 2px solid #3B6D11; }
+/* NUTRITION BADGES */
+.gel     { display:inline-block; padding:1px 5px; border-radius:3px; background:#E6F1FB; color:#0C447C; font-size:10px; font-weight:500; margin:1px; }
+.gel-h   { display:inline-block; padding:1px 5px; border-radius:3px; background:#EDF4FB; color:#0C447C; font-size:10px; font-weight:500; margin:1px; }
+.barre   { display:inline-block; padding:1px 5px; border-radius:3px; background:#F5EDD8; color:#5C3A00; font-size:10px; font-weight:500; margin:1px; }
+.compote { display:inline-block; padding:1px 5px; border-radius:3px; background:#EAF3DE; color:#27500A; font-size:10px; font-weight:500; margin:1px; }
+.gaufre  { display:inline-block; padding:1px 5px; border-radius:3px; background:#F9EDFA; color:#5A0F6E; font-size:10px; font-weight:500; margin:1px; }
+.iso-tag { display:inline-block; padding:1px 5px; border-radius:3px; background:#D8EDF5; color:#0A3D55; font-size:10px; font-weight:500; margin:1px; }
+.tot-g { font-weight: 500; color: #185FA5; }
+.tot-k { font-weight: 500; color: #27500A; }
+.low td { background: rgba(186,117,23,0.05); }
+.high td { background: rgba(29,158,117,0.05); }
+.bar-wrap { display: inline-block; width: 60px; height: 6px; background: #f1efe8; border-radius: 3px; vertical-align: middle; margin-left: 4px; position: relative; }
+.bar-fill { height: 100%; border-radius: 3px; }
+.bar-target { position: absolute; top: 0; bottom: 0; width: 1.5px; background: #E24B4A; left: 76%; }
+/* METRIC GRID */
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+.metric { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 0.75rem 1rem; }
+.metric .mlabel { font-size: 11px; color: #5F5E5A; margin-bottom: 3px; }
+.metric .mval { font-size: 17px; font-weight: 500; }
+.footer { font-size: 11px; color: #888780; text-align: center; margin-top: 1.5rem; padding-bottom: 1rem; }
+@media (prefers-color-scheme: dark) {
+  body { background: #1a1a18; color: #d3d1c7; }
+  .nav-btn { background: #242422; color: #d3d1c7; border-color: rgba(255,255,255,0.1); }
+  .nav-btn.active { background: #d3d1c7; color: #1a1a18; }
+  .card, .stat, .metric { background: #242422; border-color: rgba(255,255,255,0.08); }
+  .card h2 { color: #d3d1c7; }
+  th { background: #1a1a18; color: #888780; border-color: rgba(255,255,255,0.08); }
+  td { border-color: rgba(255,255,255,0.05); color: #d3d1c7; }
+  tr:hover td, .section-row td, .total-row td { background: #2c2c2a; }
+  .bar-wrap { background: #2c2c2a; }
+  .footer { color: #444441; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>90km du Mont-Blanc — Stratégie de course</h1>
+  <p>Plan personnalisé · FCmax 207 bpm · Basé sur l'activité du 7 juin 2026 · Temps estimé : 23h30</p>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('course', this)">🏔 Profil &amp; Stratégie</button>
+  <button class="nav-btn" onclick="showSection('detail', this)">🍫 Détail des prises</button>
+  <button class="nav-btn" onclick="showSection('horaire', this)">⏱ Résumé horaire</button>
+</div>
+
+<!-- ===================== SECTION 1 : PROFIL + TABLEAU ===================== -->
+<div id="course" class="section active">
+  <div class="stats">
+    <div class="stat"><div class="label">Distance</div><div class="val">88,8 km</div></div>
+    <div class="stat"><div class="label">D+ total</div><div class="val">6 137 m</div></div>
+    <div class="stat"><div class="label">D- total</div><div class="val">6 137 m</div></div>
+    <div class="stat"><div class="label">Temps estimé</div><div class="val">23h30</div></div>
+    <div class="stat"><div class="label">Barrière</div><div class="val">24h00</div></div>
+    <div class="stat"><div class="label">Marge finale</div><div class="val">+30 min</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Profil altimétrique</h2>
+    <div class="chart-wrap">
+      <canvas id="profilChart"></canvas>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:#1D9E75;"></span>Ravito complet</span>
+      <span><span class="dot" style="background:#378ADD;"></span>Grosse montée / descente</span>
+      <span><span class="dot" style="background:#888780;"></span>Point intermédiaire</span>
+      <span><span style="color:#3B6D11;font-weight:500;">→</span>&nbsp;Temps estimé</span>
+      <span><span style="color:#A32D2D;font-weight:500;">⏱</span>&nbsp;Barrière officielle</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Tableau stratégique — Points clés</h2>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="min-width:170px;">Point</th>
+          <th rowspan="2">Km</th>
+          <th rowspan="2">D+ cum.</th>
+          <th rowspan="2">D- cum.</th>
+          <th rowspan="2">D+ sect.</th>
+          <th rowspan="2">D- sect.</th>
+          <th rowspan="2">Barrière</th>
+          <th rowspan="2">Estimé</th>
+          <th rowspan="2">Marge</th>
+          <th colspan="2" class="th-a" style="text-align:center;">Bloc D+/D-</th>
+          <th colspan="2" class="th-b" style="text-align:center;">Inter-barrière</th>
+        </tr>
+        <tr>
+          <th class="th-a">D+ mont.</th><th>D- desc.</th>
+          <th class="th-b">D+ inter</th><th>D- inter</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="13">Phase 1 — Départ prudent</td></tr>
+        <tr><td>Chamonix départ</td><td class="num">0,0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td>00:00</td><td>00:00</td><td>—</td><td class="td-a">—</td><td>—</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>Brévent</td><td class="num">10,2</td><td class="num">1556</td><td class="num">122</td><td class="num">341</td><td class="num">12</td><td>02:57</td><td>02:20</td><td><span class="badge ok">+37 min</span></td><td class="gm td-a">1556</td><td class="gd">122</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>Planpraz <span class="ravito-badge">ravito</span></td><td class="num">12,7</td><td class="num">1601</td><td class="num">603</td><td class="num">45</td><td class="num">481</td><td>03:32</td><td>03:05</td><td><span class="badge ok">+27 min</span></td><td class="td-a">—</td><td>—</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>Flégère <span class="ravito-badge">ravito</span></td><td class="num">18,0</td><td class="num">1741</td><td class="num">887</td><td class="num">140</td><td class="num">284</td><td>04:30</td><td>03:55</td><td><span class="badge ok">+35 min</span></td><td class="td-a">—</td><td>—</td><td class="td-b" style="color:#3B6D11;font-weight:500;">1741</td><td style="color:#3B6D11;font-weight:500;">887</td></tr>
+        <tr class="section-row"><td colspan="13">Phase 2 — Cœur de course</td></tr>
+        <tr><td>Tête aux Vents</td><td class="num">21,7</td><td class="num">2054</td><td class="num">967</td><td class="num">190</td><td class="num">20</td><td>05:32</td><td>04:50</td><td><span class="badge ok">+42 min</span></td><td class="gm td-a">498</td><td class="gd">845</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>Le Buet <span class="ravito-badge">ravito</span></td><td class="num">28,5</td><td class="num">2079</td><td class="num">1771</td><td class="num">11</td><td class="num">127</td><td>06:30</td><td>06:10</td><td><span class="badge ok">+20 min</span></td><td class="td-a">—</td><td>—</td><td class="td-b" style="color:#3B6D11;font-weight:500;">338</td><td style="color:#3B6D11;font-weight:500;">884</td></tr>
+        <tr><td>Fontaine Froide</td><td class="num">29,9</td><td class="num">2244</td><td class="num">1771</td><td class="num">165</td><td class="num">0</td><td>07:09</td><td>06:40</td><td><span class="badge ok">+29 min</span></td><td class="gm td-a">190</td><td class="gd">804</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>La Villaz (fontaine)</td><td class="num">35,1</td><td class="num">2526</td><td class="num">2234</td><td class="num">166</td><td class="num">444</td><td>08:00</td><td>07:45</td><td><span class="badge ok">+15 min</span></td><td class="td-a">—</td><td>—</td><td class="td-b" style="color:#3B6D11;font-weight:500;">447</td><td style="color:#3B6D11;font-weight:500;">463</td></tr>
+        <tr><td>Emosson <span class="ravito-badge">ravito</span></td><td class="num">40,6</td><td class="num">3282</td><td class="num">2347</td><td class="num">63</td><td class="num">13</td><td>10:00</td><td>09:20</td><td><span class="badge ok">+40 min</span></td><td class="gm td-a">1038</td><td class="gd">576</td><td class="td-b" style="color:#3B6D11;font-weight:500;">756</td><td style="color:#3B6D11;font-weight:500;">113</td></tr>
+        <tr><td>Le Châtelard <span class="ravito-badge">ravito</span></td><td class="num">44,7</td><td class="num">3319</td><td class="num">3203</td><td class="num">0</td><td class="num">220</td><td>11:00</td><td>10:20</td><td><span class="badge ok">+40 min</span></td><td class="gm td-a">37</td><td class="gd">856</td><td class="td-b" style="color:#3B6D11;font-weight:500;">37</td><td style="color:#3B6D11;font-weight:500;">856</td></tr>
+        <tr><td>Télésiège Belleplace <span class="ravito-badge">ravito</span></td><td class="num">48,4</td><td class="num">3857</td><td class="num">3250</td><td class="num">538</td><td class="num">47</td><td>12:20</td><td>11:40</td><td><span class="badge ok">+40 min</span></td><td class="td-a">—</td><td>—</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>Tête de l'Arolette</td><td class="num">52,6</td><td class="num">4529</td><td class="num">3250</td><td class="num">315</td><td class="num">0</td><td>13:45</td><td>13:10</td><td><span class="badge ok">+35 min</span></td><td class="gm td-a">1210</td><td class="gd">47</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>Le Tour <span class="ravito-badge">ravito</span></td><td class="num">60,1</td><td class="num">4645</td><td class="num">4207</td><td class="num">25</td><td class="num">495</td><td>15:15</td><td>14:30</td><td><span class="badge ok">+45 min</span></td><td class="gm td-a">116</td><td class="gd">957</td><td class="td-b" style="color:#3B6D11;font-weight:500;">1326</td><td style="color:#3B6D11;font-weight:500;">1004</td></tr>
+        <tr class="section-row"><td colspan="13">Phase 3 — Gestion de la fatigue</td></tr>
+        <tr><td>Les Bois <span class="ravito-badge">ravito</span></td><td class="num">69,7</td><td class="num">4835</td><td class="num">4793</td><td class="num">46</td><td class="num">167</td><td>17:15</td><td>16:40</td><td><span class="badge warn">+35 min</span></td><td class="gm td-a">190</td><td class="gd">586</td><td class="td-b" style="color:#3B6D11;font-weight:500;">190</td><td style="color:#3B6D11;font-weight:500;">586</td></tr>
+        <tr><td>Montenvers <span class="ravito-badge">ravito</span></td><td class="num">75,2</td><td class="num">5660</td><td class="num">4793</td><td class="num">294</td><td class="num">0</td><td>19:45</td><td>19:15</td><td><span class="badge warn">+30 min</span></td><td class="td-a">—</td><td>—</td><td class="td-b" style="color:#3B6D11;font-weight:500;">825</td><td style="color:#3B6D11;font-weight:500;">0</td></tr>
+        <tr><td>Le Signal</td><td class="num">77,0</td><td class="num">5966</td><td class="num">4814</td><td class="num">306</td><td class="num">21</td><td>20:53</td><td>20:20</td><td><span class="badge warn">+33 min</span></td><td class="gm td-a">1131</td><td class="gd">21</td><td class="td-b">—</td><td>—</td></tr>
+        <tr><td>Plan de l'Aiguille <span class="ravito-badge">ravito</span></td><td class="num">81,2</td><td class="num">6127</td><td class="num">4974</td><td class="num">106</td><td class="num">33</td><td>21:45</td><td>21:20</td><td><span class="badge tight">+25 min</span></td><td class="td-a">—</td><td>—</td><td class="td-b" style="color:#3B6D11;font-weight:500;">467</td><td style="color:#3B6D11;font-weight:500;">181</td></tr>
+        <tr class="total-row"><td>🏁 Chamonix arrivée</td><td class="num">88,8</td><td class="num">6137</td><td class="num">6137</td><td class="num">5</td><td class="num">190</td><td>24:00</td><td>23:30</td><td><span class="badge warn">+30 min</span></td><td class="gm td-a">171</td><td class="gd">1323</td><td class="td-b" style="color:#3B6D11;font-weight:500;">10</td><td style="color:#3B6D11;font-weight:500;">1163</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:12px;">
+      <span class="badge ok">Confortable (&gt;35 min)</span>
+      <span class="badge warn">Vigilance (25–35 min)</span>
+      <span class="badge tight">Serré (&lt;25 min)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SECTION 2 : DETAIL DES PRISES ===================== -->
+<div id="detail" class="section">
+  <div class="metric-grid">
+    <div class="metric"><div class="mlabel">Total prises</div><div class="mval">39</div></div>
+    <div class="metric"><div class="mlabel">Kcal solide</div><div class="mval">3 888</div></div>
+    <div class="metric"><div class="mlabel">Glucides</div><div class="mval">774g</div></div>
+    <div class="metric"><div class="mlabel">Gel + Coca</div><div class="mval">5×</div></div>
+    <div class="metric"><div class="mlabel">Barre datte</div><div class="mval">5×</div></div>
+    <div class="metric"><div class="mlabel">Gel hydro pêche</div><div class="mval">8×</div></div>
+    <div class="metric"><div class="mlabel">Gel hydro coca</div><div class="mval">8×</div></div>
+    <div class="metric"><div class="mlabel">Compote</div><div class="mval">10×</div></div>
+    <div class="metric"><div class="mlabel">Gaufre Nak</div><div class="mval">5×</div></div>
+  </div>
+  <div class="card">
+    <h2>Détail des prises solides</h2>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Temps</th><th>Alimentation</th><th>Glucides</th><th>Calories</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>T+00:30</td><td><span class="gel">Gel + Coca</span></td><td class="num">30g</td><td class="num">120</td></tr>
+        <tr><td>T+01:15</td><td><span class="barre">Barre datte / cacao</span></td><td class="num">28g</td><td class="num">191</td></tr>
+        <tr><td>T+02:00</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+02:45</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+03:15</td><td><span class="gel-h">Gel hydro coca</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+04:00</td><td><span class="gaufre">Gaufre Nak caramel</span></td><td class="num">16g</td><td class="num">140</td></tr>
+        <tr><td>T+04:30</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+05:15</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+05:45</td><td><span class="gel">Gel + Coca</span></td><td class="num">30g</td><td class="num">120</td></tr>
+        <tr><td>T+06:30</td><td><span class="barre">Barre datte / cacao</span></td><td class="num">28g</td><td class="num">191</td></tr>
+        <tr><td>T+07:00</td><td><span class="gel-h">Gel hydro coca</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+07:45</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+08:15</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+09:00</td><td><span class="gaufre">Gaufre Nak caramel</span></td><td class="num">16g</td><td class="num">140</td></tr>
+        <tr><td>T+09:30</td><td><span class="gel-h">Gel hydro coca</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+10:15</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+10:45</td><td><span class="gel">Gel + Coca</span></td><td class="num">30g</td><td class="num">120</td></tr>
+        <tr><td>T+11:30</td><td><span class="barre">Barre datte / cacao</span></td><td class="num">28g</td><td class="num">191</td></tr>
+        <tr><td>T+12:00</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+12:45</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+13:15</td><td><span class="gel-h">Gel hydro coca</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+14:00</td><td><span class="gaufre">Gaufre Nak caramel</span></td><td class="num">16g</td><td class="num">140</td></tr>
+        <tr><td>T+14:30</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+15:15</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+15:45</td><td><span class="gel">Gel + Coca</span></td><td class="num">30g</td><td class="num">120</td></tr>
+        <tr><td>T+16:30</td><td><span class="barre">Barre datte / cacao</span></td><td class="num">28g</td><td class="num">191</td></tr>
+        <tr><td>T+17:00</td><td><span class="gel-h">Gel hydro coca</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+17:45</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+18:15</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+19:00</td><td><span class="gaufre">Gaufre Nak caramel</span></td><td class="num">16g</td><td class="num">140</td></tr>
+        <tr><td>T+19:30</td><td><span class="gel-h">Gel hydro coca</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+20:15</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+20:45</td><td><span class="gel">Gel + Coca</span></td><td class="num">30g</td><td class="num">120</td></tr>
+        <tr><td>T+21:30</td><td><span class="barre">Barre datte / cacao</span></td><td class="num">28g</td><td class="num">191</td></tr>
+        <tr><td>T+22:00</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+22:45</td><td><span class="compote">Compote</span></td><td class="num">10g</td><td class="num">49</td></tr>
+        <tr><td>T+23:15</td><td><span class="gel-h">Gel hydro coca</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr><td>T+24:00</td><td><span class="gaufre">Gaufre Nak caramel</span></td><td class="num">16g</td><td class="num">140</td></tr>
+        <tr><td>T+24:30</td><td><span class="gel-h">Gel hydro pêche</span></td><td class="num">24g</td><td class="num">96</td></tr>
+        <tr class="total-row"><td>TOTAL</td><td>39 prises</td><td class="tot-g">774g</td><td class="tot-k">3 888</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SECTION 3 : RÉSUMÉ HORAIRE ===================== -->
+<div id="horaire" class="section">
+  <div class="metric-grid">
+    <div class="metric"><div class="mlabel">Moy. kcal/h</div><div class="mval">~320</div></div>
+    <div class="metric"><div class="mlabel">Moy. glucides/h</div><div class="mval">~64g</div></div>
+    <div class="metric"><div class="mlabel">Total kcal</div><div class="mval">~7 900</div></div>
+    <div class="metric"><div class="mlabel">Total glucides</div><div class="mval">~1 574g</div></div>
+    <div class="metric"><div class="mlabel">ISO en continu</div><div class="mval">+161 kcal/h</div></div>
+    <div class="metric"><div class="mlabel">Dépense estimée</div><div class="mval">~340 kcal/h</div></div>
+  </div>
+  <div class="card">
+    <h2>Résumé horaire — ISO diffusé en continu (+161 kcal/h, +32g gluc/h)</h2>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Heure</th>
+          <th>Aliments solides</th>
+          <th>ISO (continu)</th>
+          <th>Gluc. solide</th>
+          <th>Gluc. ISO</th>
+          <th>Tot. Gluc.</th>
+          <th>Tot. Kcal</th>
+          <th>Visuel</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>H00→H01</td><td><span class="gel">Gel + Coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">30g</td><td class="num">32g</td><td class="tot-g">62g</td><td class="tot-k">281</td><td><div class="bar-wrap"><div class="bar-fill" style="width:63%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H01→H02</td><td><span class="barre">Barre datte/cacao</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">28g</td><td class="num">32g</td><td class="tot-g">60g</td><td class="tot-k">352</td><td><div class="bar-wrap"><div class="bar-fill" style="width:79%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H02→H03</td><td><span class="gel-h">Gel hydro pêche</span> <span class="compote">Compote</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">34g</td><td class="num">32g</td><td class="tot-g">66g</td><td class="tot-k">306</td><td><div class="bar-wrap"><div class="bar-fill" style="width:69%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H03→H04</td><td><span class="gel-h">Gel hydro coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">24g</td><td class="num">32g</td><td class="tot-g">56g</td><td class="tot-k">257</td><td><div class="bar-wrap"><div class="bar-fill" style="width:58%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="high"><td>H04→H05</td><td><span class="gaufre">Gaufre Nak</span> <span class="gel-h">Gel hydro pêche</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">397</td><td><div class="bar-wrap"><div class="bar-fill" style="width:89%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H05→H06</td><td><span class="compote">Compote</span> <span class="gel">Gel + Coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">330</td><td><div class="bar-wrap"><div class="bar-fill" style="width:74%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H06→H07</td><td><span class="barre">Barre datte/cacao</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">28g</td><td class="num">32g</td><td class="tot-g">60g</td><td class="tot-k">352</td><td><div class="bar-wrap"><div class="bar-fill" style="width:79%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H07→H08</td><td><span class="gel-h">Gel hydro coca</span> <span class="compote">Compote</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">34g</td><td class="num">32g</td><td class="tot-g">66g</td><td class="tot-k">306</td><td><div class="bar-wrap"><div class="bar-fill" style="width:69%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H08→H09</td><td><span class="gel-h">Gel hydro pêche</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">24g</td><td class="num">32g</td><td class="tot-g">56g</td><td class="tot-k">257</td><td><div class="bar-wrap"><div class="bar-fill" style="width:58%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="high"><td>H09→H10</td><td><span class="gaufre">Gaufre Nak</span> <span class="gel-h">Gel hydro coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">397</td><td><div class="bar-wrap"><div class="bar-fill" style="width:89%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H10→H11</td><td><span class="compote">Compote</span> <span class="gel">Gel + Coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">330</td><td><div class="bar-wrap"><div class="bar-fill" style="width:74%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H11→H12</td><td><span class="barre">Barre datte/cacao</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">28g</td><td class="num">32g</td><td class="tot-g">60g</td><td class="tot-k">352</td><td><div class="bar-wrap"><div class="bar-fill" style="width:79%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H12→H13</td><td><span class="gel-h">Gel hydro pêche</span> <span class="compote">Compote</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">34g</td><td class="num">32g</td><td class="tot-g">66g</td><td class="tot-k">306</td><td><div class="bar-wrap"><div class="bar-fill" style="width:69%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H13→H14</td><td><span class="gel-h">Gel hydro coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">24g</td><td class="num">32g</td><td class="tot-g">56g</td><td class="tot-k">257</td><td><div class="bar-wrap"><div class="bar-fill" style="width:58%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="high"><td>H14→H15</td><td><span class="gaufre">Gaufre Nak</span> <span class="gel-h">Gel hydro pêche</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">397</td><td><div class="bar-wrap"><div class="bar-fill" style="width:89%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H15→H16</td><td><span class="compote">Compote</span> <span class="gel">Gel + Coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">330</td><td><div class="bar-wrap"><div class="bar-fill" style="width:74%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="high"><td>H16→H17</td><td><span class="barre">Barre datte/cacao</span> <span class="gel-h">Gel hydro coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">52g</td><td class="num">32g</td><td class="tot-g">84g</td><td class="tot-k">448</td><td><div class="bar-wrap"><div class="bar-fill" style="width:100%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="low"><td>H17→H18</td><td><span class="compote">Compote</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">10g</td><td class="num">32g</td><td class="tot-g">42g</td><td class="tot-k">210</td><td><div class="bar-wrap"><div class="bar-fill" style="width:47%;background:#BA7517;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H18→H19</td><td><span class="gel-h">Gel hydro pêche</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">24g</td><td class="num">32g</td><td class="tot-g">56g</td><td class="tot-k">257</td><td><div class="bar-wrap"><div class="bar-fill" style="width:58%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="high"><td>H19→H20</td><td><span class="gaufre">Gaufre Nak</span> <span class="gel-h">Gel hydro coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">397</td><td><div class="bar-wrap"><div class="bar-fill" style="width:89%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H20→H21</td><td><span class="compote">Compote</span> <span class="gel">Gel + Coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">330</td><td><div class="bar-wrap"><div class="bar-fill" style="width:74%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H21→H22</td><td><span class="barre">Barre datte/cacao</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">28g</td><td class="num">32g</td><td class="tot-g">60g</td><td class="tot-k">352</td><td><div class="bar-wrap"><div class="bar-fill" style="width:79%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H22→H23</td><td><span class="gel-h">Gel hydro pêche</span> <span class="compote">Compote</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">34g</td><td class="num">32g</td><td class="tot-g">66g</td><td class="tot-k">306</td><td><div class="bar-wrap"><div class="bar-fill" style="width:69%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr><td>H23→H24</td><td><span class="gel-h">Gel hydro coca</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">24g</td><td class="num">32g</td><td class="tot-g">56g</td><td class="tot-k">257</td><td><div class="bar-wrap"><div class="bar-fill" style="width:58%;background:#378ADD;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="high"><td>H24→H25</td><td><span class="gaufre">Gaufre Nak</span> <span class="gel-h">Gel hydro pêche</span></td><td><span class="iso-tag">ISO+ + 1:08</span></td><td class="num">40g</td><td class="num">32g</td><td class="tot-g">72g</td><td class="tot-k">397</td><td><div class="bar-wrap"><div class="bar-fill" style="width:89%;background:#1D9E75;"></div><div class="bar-target"></div></div></td></tr>
+        <tr class="total-row"><td>TOTAL</td><td colspan="2">25h · 13× ISO+ + 13× 1:08</td><td class="num">~774g</td><td class="num">~800g</td><td class="tot-g">~1 574g</td><td class="tot-k">~7 908</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;font-size:11px;color:#5F5E5A;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#1D9E75;border-radius:2px;display:inline-block;"></span>≥340 kcal/h</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#378ADD;border-radius:2px;display:inline-block;"></span>250–340 kcal/h</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#BA7517;border-radius:2px;display:inline-block;"></span>&lt;250 kcal/h</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:1.5px;height:12px;background:#E24B4A;display:inline-block;"></span>Cible 340 kcal/h</span>
+    </div>
+  </div>
+</div>
+
+<div class="footer">90km du Mont-Blanc · Stratégie générée le 15 juin 2026 · FCmax 207 bpm · Basé sur l'activité du 7 juin 2026</div>
+
+<script>
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'course' && !window.chartBuilt) buildChart();
+}
+
+function buildChart() {
+  window.chartBuilt = true;
+  const pts = [
+    {km:0,    dplus:0,    alt:1035, label:'Chamonix',            time:'00:00', barriere:'00:00', ravito:false, bloc:false},
+    {km:10.2, dplus:1556, alt:2471, label:'Brévent',             time:'02:20', barriere:'02:57', ravito:false, bloc:true,  note:'↑1556 ↓122'},
+    {km:12.7, dplus:1601, alt:2016, label:'Planpraz',            time:'03:05', barriere:'03:32', ravito:true,  bloc:false},
+    {km:18.0, dplus:1741, alt:1904, label:'Flégère',             time:'03:55', barriere:'04:30', ravito:true,  bloc:false},
+    {km:21.7, dplus:2054, alt:2120, label:'Tête aux Vents',      time:'04:50', barriere:'05:32', ravito:false, bloc:true,  note:'↑498 ↓845'},
+    {km:28.5, dplus:2079, alt:1347, label:'Le Buet',             time:'06:10', barriere:'06:30', ravito:true,  bloc:false},
+    {km:29.9, dplus:2244, alt:2200, label:'Fontaine Froide',     time:'06:40', barriere:'07:09', ravito:false, bloc:true,  note:'↑190 ↓804'},
+    {km:35.1, dplus:2526, alt:1651, label:'La Villaz',           time:'07:45', barriere:'08:00', ravito:false, bloc:false},
+    {km:40.6, dplus:3282, alt:1970, label:'Emosson',             time:'09:20', barriere:'10:00', ravito:true,  bloc:true,  note:'↑1038 ↓576'},
+    {km:44.7, dplus:3319, alt:1316, label:'Le Châtelard',        time:'10:20', barriere:'11:00', ravito:true,  bloc:true,  note:'↑37 ↓856'},
+    {km:48.4, dplus:3857, alt:1470, label:'Télésiège Belleplace',time:'11:40', barriere:'12:20', ravito:true,  bloc:false},
+    {km:52.6, dplus:4529, alt:2333, label:"Tête de l'Arolette",  time:'13:10', barriere:'13:45', ravito:false, bloc:true,  note:'↑1210 ↓47'},
+    {km:60.1, dplus:4645, alt:1148, label:'Le Tour',             time:'14:30', barriere:'15:15', ravito:true,  bloc:true,  note:'↑116 ↓957'},
+    {km:69.7, dplus:4835, alt:1082, label:'Les Bois',            time:'16:40', barriere:'17:15', ravito:true,  bloc:true,  note:'↑190 ↓586'},
+    {km:75.2, dplus:5660, alt:1913, label:'Montenvers',          time:'19:15', barriere:'19:45', ravito:true,  bloc:false},
+    {km:77.0, dplus:5966, alt:2191, label:'Le Signal',           time:'20:20', barriere:'20:53', ravito:false, bloc:true,  note:'↑1131 ↓21'},
+    {km:81.2, dplus:6127, alt:2317, label:"Plan de l'Aiguille",  time:'21:20', barriere:'21:45', ravito:true,  bloc:false},
+    {km:88.8, dplus:6137, alt:1035, label:'Chamonix arrivée',    time:'23:30', barriere:'24:00', ravito:false, bloc:true,  note:'↑171 ↓1323'},
+  ];
+  const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const textColor = isDark ? '#B4B2A9' : '#5F5E5A';
+  const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const fillColor = isDark ? 'rgba(55,138,221,0.12)' : 'rgba(55,138,221,0.08)';
+  const pointColors = pts.map(p => p.ravito ? '#1D9E75' : p.bloc ? '#378ADD' : '#888780');
+  const pointSizes  = pts.map(p => (p.ravito || p.bloc) ? 7 : 4);
+  const abovePts = [10.2, 21.7, 29.9, 40.6, 52.6, 77.0, 81.2];
+  const annotations = {};
+  pts.forEach((p, i) => {
+    const above = abovePts.includes(p.km);
+    const yDir  = above ? -1 : 1;
+    annotations['label_'+i] = { type:'label', xValue:p.km, yValue:p.alt, yAdjust:yDir*22, content:p.label, font:{size:10,weight:'500'}, color:p.ravito?'#0F6E56':p.bloc?'#0C447C':textColor, textAlign:'center' };
+    annotations['time_'+i]  = { type:'label', xValue:p.km, yValue:p.alt, yAdjust:yDir*34, content:'→ '+p.time, font:{size:9}, color:'#3B6D11', textAlign:'center' };
+    annotations['barr_'+i]  = { type:'label', xValue:p.km, yValue:p.alt, yAdjust:yDir*44, content:'⏱ '+p.barriere, font:{size:9}, color:'#A32D2D', textAlign:'center' };
+    if (p.note) annotations['note_'+i] = { type:'label', xValue:p.km, yValue:p.alt, yAdjust:yDir*56, content:p.note, font:{size:9}, color:'#185FA5', textAlign:'center' };
+  });
+  new Chart(document.getElementById('profilChart'), {
+    type: 'line',
+    data: { labels: pts.map(p=>p.km), datasets: [{ data: pts.map(p=>p.alt), borderColor:'#378ADD', borderWidth:2, pointBackgroundColor:pointColors, pointBorderColor:pointColors, pointRadius:pointSizes, pointHoverRadius:8, fill:true, backgroundColor:fillColor, tension:0.3 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{top:65,bottom:10,left:10,right:20} },
+      plugins: {
+        legend:{display:false},
+        tooltip:{ callbacks:{ title:(items)=>pts[items[0].dataIndex].label, label:(item)=>{ const p=pts[item.dataIndex]; const l=[`Altitude : ${p.alt} m`,`Km : ${p.km} — D+ cumulé : ${p.dplus.toLocaleString()} m`,`Passage estimé : ${p.time}`,`Barrière : ${p.barriere}`]; if(p.note) l.push(p.note); return l; }}},
+        annotation:{annotations}
+      },
+      scales: {
+        x:{ type:'linear', min:0, max:90, ticks:{ color:textColor, font:{size:10}, stepSize:10, callback:(val)=>{ const p=pts.find(p=>p.km===val); return p?[val+' km','+'+p.dplus.toLocaleString()+' m']:val+' km'; }}, grid:{color:gridColor} },
+        y:{ min:800, max:2700, title:{display:true,text:'Altitude (m)',color:textColor,font:{size:11}}, ticks:{color:textColor,font:{size:10},callback:v=>v+' m',stepSize:200}, grid:{color:gridColor} }
+      }
+    }
+  });
+}
+window.addEventListener('load', () => buildChart());
+</script>
+</body>
+</html>
