@@ -40,6 +40,10 @@ tr:hover td { filter: brightness(0.97); }
 .ra td.td-b2   { background: rgba(234,141,0,0.08); }
 .ra td.td-barr { background: rgba(234,141,0,0.08); border-left: 2px solid rgba(163,45,45,0.2); }
 .ra td.td-est  { background: rgba(234,141,0,0.08); border-left: 2px solid rgba(29,158,117,0.2); }
+/* Input temps réel */
+.time-input { width:62px; padding:3px 5px; border:1px solid rgba(234,141,0,0.4); border-radius:5px; font-size:11px; font-family:inherit; background:rgba(234,141,0,0.06); color:#7A4800; text-align:center; font-weight:600; }
+.time-input:focus { outline:none; border-color:#EA8D00; background:rgba(234,141,0,0.12); }
+.time-input::placeholder { color:rgba(122,72,0,0.4); font-weight:400; }
 /* Badges marge */
 .b { display:inline-block; padding:1px 5px; border-radius:3px; font-size:10px; font-weight:600; }
 .ok   { background:#EAF3DE; color:#27500A; }
@@ -136,7 +140,7 @@ tr:hover td { filter: brightness(0.97); }
         <th colspan="2" class="th-b" style="text-align:center;">Bloc D+/D-</th>
         <th class="th-barr">Barrière</th>
         <th class="th-est">Estimé</th>
-        <th rowspan="2">Marge</th>
+        <th rowspan="2" style="background:rgba(234,141,0,0.07);color:#7A4800;border-left:2px solid #EA8D00;">Réel</th>
       </tr>
       <tr>
         <th class="th-ia">D+</th><th style="background:rgba(186,117,23,0.07);color:#854F0B;">D-</th>
@@ -147,26 +151,26 @@ tr:hover td { filter: brightness(0.97); }
     </thead>
     <tbody>
       <tr class="sr"><td colspan="10">Phase 1 — Départ prudent</td></tr>
-      <tr><td>Chamonix départ</td><td class="num">0,0</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">00:00</td><td class="td-est">00:00</td><td>—</td></tr>
-      <tr><td>Brévent</td><td class="num">10,2</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">1556</td><td class="dm td-b2">122</td><td class="td-barr">02:57</td><td class="td-est">02:20</td><td><span class="b ok">+37</span></td></tr>
-      <tr><td>Planpraz<span class="rv">ravito</span></td><td class="num">12,7</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">03:32</td><td class="td-est">03:05</td><td><span class="b ok">+27</span></td></tr>
-      <tr><td>Flégère<span class="rv">ravito</span></td><td class="num">18,0</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">04:30</td><td class="td-est">03:55</td><td><span class="b ok">+35</span></td></tr>
+      <tr><td>Chamonix départ</td><td class="num">0,0</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">00:00</td><td class="td-est" id="est-depart">00:00</td><td class="num">—</td></tr>
+      <tr><td>Brévent</td><td class="num">10,2</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">1556</td><td class="dm td-b2">122</td><td class="td-barr">02:57</td><td class="td-est" id="est-brevent">02:20</td><td class="num">—</td></tr>
+      <tr><td>Planpraz<span class="rv">ravito</span></td><td class="num">12,7</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">03:32</td><td class="td-est" id="est-planpraz">03:05</td><td class="num">—</td></tr>
+      <tr><td>Flégère<span class="rv">ravito</span></td><td class="num">18,0</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">04:30</td><td class="td-est" id="est-flegere">03:55</td><td class="num">—</td></tr>
       <tr class="sr"><td colspan="10">Phase 2 — Cœur de course</td></tr>
-      <tr><td>Tête aux Vents</td><td class="num">21,7</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">498</td><td class="dm td-b2">845</td><td class="td-barr">05:32</td><td class="td-est">04:50</td><td><span class="b ok">+42</span></td></tr>
-      <tr class="ra"><td>Le Buet<span class="rva">assisté</span></td><td class="num">28,5</td><td class="dia td-ia2">28,5 km</td><td class="dia td-ia">2079</td><td class="dia td-ia2">1771</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">06:30</td><td class="td-est">06:10</td><td><span class="b ok">+20</span></td></tr>
-      <tr><td>Fontaine Froide</td><td class="num">29,9</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">190</td><td class="dm td-b2">804</td><td class="td-barr">07:09</td><td class="td-est">06:40</td><td><span class="b ok">+29</span></td></tr>
-      <tr><td>La Villaz (fontaine)</td><td class="num">35,1</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">08:00</td><td class="td-est">07:45</td><td><span class="b ok">+15</span></td></tr>
-      <tr class="ra"><td>Emosson<span class="rva">assisté</span></td><td class="num">40,6</td><td class="dia td-ia2">12,1 km</td><td class="dia td-ia">1203</td><td class="dia td-ia2">576</td><td class="dp td-b">1038</td><td class="dm td-b2">576</td><td class="td-barr">10:00</td><td class="td-est">09:20</td><td><span class="b ok">+40</span></td></tr>
-      <tr><td>Le Châtelard<span class="rv">ravito</span></td><td class="num">44,7</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">37</td><td class="dm td-b2">856</td><td class="td-barr">11:00</td><td class="td-est">10:20</td><td><span class="b ok">+40</span></td></tr>
-      <tr><td>Télésiège Belleplace<span class="rv">ravito</span></td><td class="num">48,4</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">12:20</td><td class="td-est">11:40</td><td><span class="b ok">+40</span></td></tr>
-      <tr><td>Tête de l'Arolette</td><td class="num">52,6</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">1210</td><td class="dm td-b2">47</td><td class="td-barr">13:45</td><td class="td-est">13:10</td><td><span class="b ok">+35</span></td></tr>
-      <tr class="ra"><td>Le Tour<span class="rva">assisté</span></td><td class="num">60,1</td><td class="dia td-ia2">19,5 km</td><td class="dia td-ia">1363</td><td class="dia td-ia2">1860</td><td class="dp td-b">116</td><td class="dm td-b2">957</td><td class="td-barr">15:15</td><td class="td-est">14:30</td><td><span class="b ok">+45</span></td></tr>
+      <tr><td>Tête aux Vents</td><td class="num">21,7</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">498</td><td class="dm td-b2">845</td><td class="td-barr">05:32</td><td class="td-est" id="est-tete">04:50</td><td class="num">—</td></tr>
+      <tr class="ra"><td>Le Buet<span class="rva">assisté</span></td><td class="num">28,5</td><td class="dia td-ia2">28,5 km</td><td class="dia td-ia">2079</td><td class="dia td-ia2">1771</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">06:30</td><td class="td-est" id="est-buet">06:10</td><td class="ra" style="border-left:2px solid rgba(234,141,0,0.4);"><input class="time-input" id="reel-buet" type="text" placeholder="HH:MM" maxlength="5" oninput="updateEstimes(this,'buet',370)"></td></tr>
+      <tr><td>Fontaine Froide</td><td class="num">29,9</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">190</td><td class="dm td-b2">804</td><td class="td-barr">07:09</td><td class="td-est" id="est-fontaine">06:40</td><td class="num">—</td></tr>
+      <tr><td>La Villaz (fontaine)</td><td class="num">35,1</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">08:00</td><td class="td-est" id="est-villaz">07:45</td><td class="num">—</td></tr>
+      <tr class="ra"><td>Emosson<span class="rva">assisté</span></td><td class="num">40,6</td><td class="dia td-ia2">12,1 km</td><td class="dia td-ia">1203</td><td class="dia td-ia2">576</td><td class="dp td-b">1038</td><td class="dm td-b2">576</td><td class="td-barr">10:00</td><td class="td-est" id="est-emosson">09:20</td><td class="ra" style="border-left:2px solid rgba(234,141,0,0.4);"><input class="time-input" id="reel-emosson" type="text" placeholder="HH:MM" maxlength="5" oninput="updateEstimes(this,'emosson',560)"></td></tr>
+      <tr><td>Le Châtelard<span class="rv">ravito</span></td><td class="num">44,7</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">37</td><td class="dm td-b2">856</td><td class="td-barr">11:00</td><td class="td-est" id="est-chatelard">10:20</td><td class="num">—</td></tr>
+      <tr><td>Télésiège Belleplace<span class="rv">ravito</span></td><td class="num">48,4</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">12:20</td><td class="td-est" id="est-telesiege">11:40</td><td class="num">—</td></tr>
+      <tr><td>Tête de l'Arolette</td><td class="num">52,6</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">1210</td><td class="dm td-b2">47</td><td class="td-barr">13:45</td><td class="td-est" id="est-arolette">13:10</td><td class="num">—</td></tr>
+      <tr class="ra"><td>Le Tour<span class="rva">assisté</span></td><td class="num">60,1</td><td class="dia td-ia2">19,5 km</td><td class="dia td-ia">1363</td><td class="dia td-ia2">1860</td><td class="dp td-b">116</td><td class="dm td-b2">957</td><td class="td-barr">15:15</td><td class="td-est" id="est-tour">14:30</td><td class="ra" style="border-left:2px solid rgba(234,141,0,0.4);"><input class="time-input" id="reel-tour" type="text" placeholder="HH:MM" maxlength="5" oninput="updateEstimes(this,'tour',870)"></td></tr>
       <tr class="sr"><td colspan="10">Phase 3 — Gestion de la fatigue</td></tr>
-      <tr class="ra"><td>Les Bois<span class="rva">assisté</span></td><td class="num">69,7</td><td class="dia td-ia2">9,6 km</td><td class="dia td-ia">190</td><td class="dia td-ia2">586</td><td class="dp td-b">190</td><td class="dm td-b2">586</td><td class="td-barr">17:15</td><td class="td-est">16:40</td><td><span class="b warn">+35</span></td></tr>
-      <tr><td>Montenvers<span class="rv">ravito</span></td><td class="num">75,2</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">19:45</td><td class="td-est">19:15</td><td><span class="b warn">+30</span></td></tr>
-      <tr><td>Le Signal</td><td class="num">77,0</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">1131</td><td class="dm td-b2">21</td><td class="td-barr">20:53</td><td class="td-est">20:20</td><td><span class="b warn">+33</span></td></tr>
-      <tr><td>Plan de l'Aiguille<span class="rv">ravito</span></td><td class="num">81,2</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">21:45</td><td class="td-est">21:20</td><td><span class="b tght">+25</span></td></tr>
-      <tr class="tr"><td>🏁 Chamonix arrivée</td><td class="num">88,8</td><td class="dia td-ia2">19,1 km</td><td class="dia td-ia">1302</td><td class="dia td-ia2">1344</td><td class="dp td-b">477</td><td class="dm td-b2">1344</td><td class="td-barr">24:00</td><td class="td-est">23:30</td><td><span class="b warn">+30</span></td></tr>
+      <tr class="ra"><td>Les Bois<span class="rva">assisté</span></td><td class="num">69,7</td><td class="dia td-ia2">9,6 km</td><td class="dia td-ia">190</td><td class="dia td-ia2">586</td><td class="dp td-b">190</td><td class="dm td-b2">586</td><td class="td-barr">17:15</td><td class="td-est" id="est-bois">16:40</td><td class="ra" style="border-left:2px solid rgba(234,141,0,0.4);"><input class="time-input" id="reel-bois" type="text" placeholder="HH:MM" maxlength="5" oninput="updateEstimes(this,'bois',1000)"></td></tr>
+      <tr><td>Montenvers<span class="rv">ravito</span></td><td class="num">75,2</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">19:45</td><td class="td-est" id="est-montenvers">19:15</td><td class="num">—</td></tr>
+      <tr><td>Le Signal</td><td class="num">77,0</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="dp td-b">1131</td><td class="dm td-b2">21</td><td class="td-barr">20:53</td><td class="td-est" id="est-signal">20:20</td><td class="num">—</td></tr>
+      <tr><td>Plan de l'Aiguille<span class="rv">ravito</span></td><td class="num">81,2</td><td class="num td-ia2">—</td><td class="td-ia">—</td><td class="td-ia2">—</td><td class="td-b">—</td><td class="td-b2">—</td><td class="td-barr">21:45</td><td class="td-est" id="est-aiguille">21:20</td><td class="num">—</td></tr>
+      <tr class="tr"><td>🏁 Chamonix arrivée</td><td class="num">88,8</td><td class="dia td-ia2">19,1 km</td><td class="dia td-ia">1302</td><td class="dia td-ia2">1344</td><td class="dp td-b">477</td><td class="dm td-b2">1344</td><td class="td-barr">24:00</td><td class="td-est" id="est-arrivee">23:30</td><td class="num">—</td></tr>
     </tbody>
   </table>
   </div>
@@ -175,10 +179,8 @@ tr:hover td { filter: brightness(0.97); }
     <span><span class="lbar" style="background:#BA7517;"></span>Inter-assistance</span>
     <span><span class="lbar" style="background:#185FA5;"></span>Bloc D+/D-</span>
     <span><span class="lbar" style="background:#A32D2D;"></span>Barrière</span>
-    <span><span class="lbar" style="background:#1D9E75;"></span>Estimé</span>
-    <span><span class="b ok">ok</span> &gt;35min</span>
-    <span><span class="b warn">warn</span> 25-35min</span>
-    <span><span class="b tght">!</span> &lt;25min</span>
+    <span><span class="lbar" style="background:#1D9E75;"></span>Estimé (mis à jour auto)</span>
+    <span style="display:flex;align-items:center;gap:4px;"><input class="time-input" style="width:48px;pointer-events:none;" placeholder="HH:MM" readonly> Saisie temps réel</span>
   </div>
 </div>
 </div>
@@ -288,6 +290,99 @@ const C_BLOC           = '#378ADD';
 const C_INTER          = '#888780';
 const C_BARR           = '#A32D2D';
 const C_EST            = '#0F6E56';
+
+
+// Estimés de base en minutes
+const BASE_EST = {
+  'depart':0,'brevent':140,'planpraz':185,'flegere':235,
+  'tete':290,'buet':370,'fontaine':400,'villaz':465,
+  'emosson':560,'chatelard':620,'telesiege':700,'arolette':790,
+  'tour':870,'bois':1000,'montenvers':1155,'signal':1220,
+  'aiguille':1280,'arrivee':1410
+};
+
+// Ordre des points
+const POINTS_ORDER = ['depart','brevent','planpraz','flegere','tete',
+  'buet','fontaine','villaz','emosson','chatelard','telesiege','arolette',
+  'tour','bois','montenvers','signal','aiguille','arrivee'];
+
+// Ravitos assistés avec leur indice dans POINTS_ORDER
+const ASSISTES = ['buet','emosson','tour','bois'];
+
+function timeToMin(str) {
+  const m = str.match(/^(\d{1,2})[:h](\d{2})$/);
+  if (!m) return null;
+  return parseInt(m[1])*60 + parseInt(m[2]);
+}
+function minToTime(min) {
+  if (min < 0) min = 0;
+  const h = Math.floor(min/60), m = min%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+
+function updateEstimes(input, pointId, baseMin) {
+  // Formater automatiquement HH:MM
+  let v = input.value.replace(/[^0-9]/g,'');
+  if (v.length > 2) v = v.slice(0,2)+':'+v.slice(2,4);
+  if (input.value !== v && !input.value.includes(':')) input.value = v;
+
+  // Calculer le décalage depuis ce point assisté
+  const real = timeToMin(input.value);
+  if (!real) {
+    // Valeur invalide : reset tous les estimés à leur valeur de base
+    recalcAll();
+    return;
+  }
+
+  const delta = real - baseMin; // différence en minutes (+ = retard, - = avance)
+
+  // Trouver le dernier assisté saisi avant ce point
+  // On applique le décalage à tous les points APRÈS ce ravito assisté
+  const idx = POINTS_ORDER.indexOf(pointId);
+  POINTS_ORDER.forEach((pt, i) => {
+    const el = document.getElementById('est-'+pt);
+    if (!el) return;
+    if (i > idx) {
+      el.textContent = minToTime(BASE_EST[pt] + delta);
+    } else if (i === idx) {
+      el.textContent = minToTime(real);
+    }
+  });
+}
+
+function recalcAll() {
+  // Trouver le dernier assisté valide saisi
+  let lastDelta = 0;
+  let lastIdx = -1;
+  ASSISTES.forEach(pt => {
+    const inp = document.getElementById('reel-'+pt);
+    if (!inp) return;
+    const real = timeToMin(inp.value);
+    if (real !== null) {
+      const idx = POINTS_ORDER.indexOf(pt);
+      if (idx > lastIdx) {
+        lastIdx = idx;
+        lastDelta = real - BASE_EST[pt];
+      }
+    }
+  });
+  POINTS_ORDER.forEach((pt, i) => {
+    const el = document.getElementById('est-'+pt);
+    if (!el) return;
+    if (i > lastIdx) {
+      el.textContent = minToTime(BASE_EST[pt] + lastDelta);
+    } else {
+      // Vérifier si ce point a une saisie réelle
+      const inp = document.getElementById('reel-'+pt);
+      if (inp) {
+        const real = timeToMin(inp.value);
+        el.textContent = real !== null ? minToTime(real) : minToTime(BASE_EST[pt]);
+      } else {
+        el.textContent = minToTime(BASE_EST[pt]);
+      }
+    }
+  });
+}
 
 function buildChart() {
   window.chartBuilt = true;
